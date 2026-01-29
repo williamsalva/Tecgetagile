@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import FlipCard from "@/components/FlipCard";
 import ProjectTable from "@/components/ProjectTable";
+import ProjectMatrix from "@/components/ProjectMatrix";
 import { projects } from "@/data/projects";
 
 export default function Home() {
@@ -13,7 +14,7 @@ export default function Home() {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['Verde', 'Amarillo', 'Rojo', 'Gris', 'Azul']);
-  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  const [viewMode, setViewMode] = useState<'chart' | 'table' | 'matrix'>('matrix');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Calculate project counts per status
@@ -231,6 +232,16 @@ export default function Home() {
                 }`}
               >
                 <span className="text-[10px] font-black uppercase tracking-widest">Tabla</span>
+              </button>
+              <button 
+                onClick={() => setViewMode('matrix')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                  viewMode === 'matrix' 
+                    ? 'bg-zinc-50 text-brand-primary' 
+                    : 'opacity-40 hover:opacity-100 text-brand-secondary'
+                }`}
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest">Matriz</span>
               </button>
             </div>
           </div>
@@ -462,10 +473,25 @@ export default function Home() {
           <span>${Math.round(getXValue((dimensions.width - padding) / dimensions.width)).toLocaleString()}</span>
         </div>
           </div>
-        ) : (
+        ) : viewMode === 'table' ? (
           <ProjectTable projects={filteredProjects} />
+        ) : (
+          <ProjectMatrix projects={filteredProjects} />
         )}
       </main>
+
+      <footer className="mt-20 py-12 border-t border-zinc-100 flex flex-col items-center gap-8">
+        <div className="flex items-center justify-center opacity-70 grayscale hover:grayscale-0 transition-all duration-700">
+          <img 
+            src="/logos.png" 
+            alt="Grupo Educativo Tecnológico de Monterrey Logos" 
+            className="h-20 w-auto object-contain"
+          />
+        </div>
+        <p className="text-[10px] font-bold text-brand-secondary/30 uppercase tracking-[0.2em]">
+          Getagile © 2026 • Impulsando el futuro de la educación e innovación
+        </p>
+      </footer>
       
     </div>
   );
