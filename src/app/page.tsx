@@ -256,8 +256,8 @@ export default function Home() {
                 { id: 'Verde', label: 'Saludable', color: 'bg-emerald-500' },
                 { id: 'Amarillo', label: 'Riesgo', color: 'bg-amber-400' },
                 { id: 'Rojo', label: 'Crítico', color: 'bg-rose-500' },
-                { id: 'Gris', label: 'Planeación', color: 'bg-slate-400' },
-                { id: 'Azul', label: 'Soporte', color: 'bg-blue-500' },
+                { id: 'Gris', label: 'Hold', color: 'bg-slate-400' },
+                // { id: 'Azul', label: 'Soporte', color: 'bg-blue-500' },
               ].map((status) => (
                 <button
                   key={status.id}
@@ -274,7 +274,7 @@ export default function Home() {
                       {status.label}
                     </span>
                     <span className="text-[8px] font-black text-brand-secondary/50 mt-0.5">
-                      {statusCounts[status.id] || 0} Proyectos
+                      {statusCounts[status.id] || 0} Productos
                     </span>
                   </div>
                 </button>
@@ -331,7 +331,7 @@ export default function Home() {
             </svg>
             <input 
               type="text"
-              placeholder="Buscar por ID, Proyecto o PO..."
+              placeholder="Buscar por ID, Producto o PO..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-transparent border-none outline-none text-xs font-bold text-brand-primary placeholder:text-brand-secondary/30 w-full"
@@ -350,7 +350,7 @@ export default function Home() {
 
       <div className="flex justify-center mb-10">
         <p className="text-[10px] font-bold text-brand-primary/40 uppercase tracking-[0.2em] bg-white/50 backdrop-blur-md px-4 py-2 rounded-full border border-brand-primary/5">
-          {filteredProjects.length} {filteredProjects.length === 1 ? 'Proyecto visualizado' : 'Proyectos visualizados'} 
+          {filteredProjects.length} {filteredProjects.length === 1 ? 'Producto visualizado' : 'Productos visualizados'} 
           {viewMode === 'chart' && ' • Arrastra para navegar • Usa zoom para separar'}
         </p>
       </div>

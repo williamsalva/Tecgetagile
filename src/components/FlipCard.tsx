@@ -10,27 +10,20 @@ interface FlipCardProps {
   onToggle: () => void;
 }
 
-const statusColors = {
-  Verde: "bg-emerald-500",
-  Amarillo: "bg-amber-400",
-  Rojo: "bg-rose-500",
-  Gris: "bg-slate-400",
-  Azul: "bg-blue-500",
-};
-
-const statusBorderColors = {
-  Verde: "border-emerald-500",
-  Amarillo: "border-amber-400",
-  Rojo: "border-rose-500",
-  Gris: "border-slate-400",
-  Azul: "border-blue-500",
+const statusConfig: Record<string, { label: string; color: string; border: string }> = {
+  Verde: { label: "Saludable", color: "bg-emerald-500", border: "border-emerald-500" },
+  Amarillo: { label: "Riesgo", color: "bg-amber-400", border: "border-amber-400" },
+  Rojo: { label: "Crítico", color: "bg-rose-500", border: "border-rose-500" },
+  Gris: { label: "Hold", color: "bg-slate-400", border: "border-slate-400" },
+  Azul: { label: "Soporte", color: "bg-blue-500", border: "border-blue-500" },
 };
 
 export default function FlipCard({ project, zoom, isFlipped, onToggle }: FlipCardProps) {
 
   const typeIcon = project.tipo === "Producto" ? "Π" : "ϰ";
-  const statusColor = statusColors[project.estatus];
-  const statusBorderColor = statusBorderColors[project.estatus];
+  const config = statusConfig[project.estatus] || statusConfig.Gris;
+  const statusColor = config.color;
+  const statusBorderColor = config.border;
 
   // Calculate hover scale to keep final screen size roughly constant (around 240px)
   // zoom * cardBaseScale (Math.max(0.2, 1/zoom)) * hoverMultiplier = 5 (target scale)
@@ -85,26 +78,26 @@ export default function FlipCard({ project, zoom, isFlipped, onToggle }: FlipCar
             <div className="flex justify-between items-center text-[3.5px]">
               <span className="opacity-70 font-semibold uppercase text-[2.5px]">Status</span>
               <span className={`px-1 py-0.1 rounded-full font-bold text-[2.5px] uppercase ${statusColor} text-white`}>
-                {project.estatus}
+                {config.label}
               </span>
             </div>
             
             <div className="flex justify-between items-center text-[3.5px]">
-              <span className="opacity-70 font-semibold uppercase text-[2.5px]">Monto</span>
+              <span className="opacity-70 font-semibold uppercase text-[2.5px]">Inversión</span>
               <span className="font-bold text-brand-accent text-[3.5px]">
-                ${project.monto.toLocaleString()}
+                {project.monto <= 5000 ? "Baja" : project.monto <= 15000 ? "Media" : "Alta"}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-[3.5px]">
-              <span className="opacity-70 font-semibold uppercase text-[2.5px]">Avance</span>
+              <span className="opacity-70 font-semibold uppercase text-[2.5px]">Outcome</span>
               <span className="font-bold text-[3.5px]">{project.avance}%</span>
             </div>
           </div>
 
           <div className="mt-auto pt-0.5 border-t border-white/10">
             <div className="flex flex-wrap gap-0.5">
-              <span className="text-[2.5px] bg-white/15 px-1 py-0.2 rounded-sm leading-none whitespace-nowrap block w-full truncate text-center font-bold">
+              <span className="text-[2.5px] bg-white/15 px-1 py-0.4 rounded-sm leading-none whitespace-nowrap block w-full truncate text-center font-bold">
                 {project.po}
               </span>
             </div>

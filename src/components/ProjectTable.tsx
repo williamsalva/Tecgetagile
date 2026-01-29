@@ -6,12 +6,12 @@ interface ProjectTableProps {
   projects: Project[];
 }
 
-const statusColors = {
-  Verde: "bg-emerald-500",
-  Amarillo: "bg-amber-400",
-  Rojo: "bg-rose-500",
-  Gris: "bg-slate-400",
-  Azul: "bg-blue-500",
+const statusConfig: Record<string, { label: string; color: string }> = {
+  Verde: { label: "Saludable", color: "bg-emerald-500" },
+  Amarillo: { label: "Riesgo", color: "bg-amber-400" },
+  Rojo: { label: "Crítico", color: "bg-rose-500" },
+  Gris: { label: "Hold", color: "bg-slate-400" },
+  Azul: { label: "Soporte", color: "bg-blue-500" },
 };
 
 export default function ProjectTable({ projects }: ProjectTableProps) {
@@ -23,7 +23,7 @@ export default function ProjectTable({ projects }: ProjectTableProps) {
             <tr className="border-b border-zinc-100 bg-zinc-50/50">
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60">ID</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60 text-center">Sim</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60">Proyecto</th>
+              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60">Producto</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60">Estatus</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60 text-right">Inversión</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-brand-secondary/60 text-center">Avance</th>
@@ -34,7 +34,7 @@ export default function ProjectTable({ projects }: ProjectTableProps) {
             {projects.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-zinc-400 text-xs font-medium italic">
-                  No se encontraron proyectos con los filtros seleccionados
+                  No se encontraron productos con los filtros seleccionados
                 </td>
               </tr>
             ) : (
@@ -56,13 +56,15 @@ export default function ProjectTable({ projects }: ProjectTableProps) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${statusColors[project.estatus]}`} />
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-brand-primary">{project.estatus}</span>
+                      <div className={`w-2 h-2 rounded-full ${statusConfig[project.estatus].color}`} />
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-brand-primary">
+                        {statusConfig[project.estatus].label}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <span className="text-xs font-mono font-bold text-brand-primary">
-                      ${project.monto.toLocaleString()}
+                    <span className="text-xs font-bold text-brand-primary">
+                      {project.monto <= 5000 ? "Baja" : project.monto <= 15000 ? "Media" : "Alta"}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -72,7 +74,7 @@ export default function ProjectTable({ projects }: ProjectTableProps) {
                       </span>
                       <div className="w-16 h-1 bg-zinc-100 rounded-full overflow-hidden">
                         <div 
-                          className={`h-full ${statusColors[project.estatus]}`} 
+                          className={`h-full ${statusConfig[project.estatus].color}`} 
                           style={{ width: `${Math.min(100, Math.max(0, project.avance))}%` }}
                         />
                       </div>
