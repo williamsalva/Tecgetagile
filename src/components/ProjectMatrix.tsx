@@ -39,7 +39,7 @@ export default function ProjectMatrix({ projects }: ProjectMatrixProps) {
           {categories.investment.map((inv) => (
             <div key={inv.id} className="text-center">
               <h4 className="text-[10px] font-black uppercase tracking-widest text-brand-secondary/60 mb-1">{inv.label}</h4>
-              <p className="text-[10px] font-bold text-brand-secondary/30">{inv.range}</p>
+              {/* <p className="text-[10px] font-bold text-brand-secondary/30">{inv.range}</p> */}
             </div>
           ))}
         </div>

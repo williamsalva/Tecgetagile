@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import FlipCard from "@/components/FlipCard";
 import ProjectTable from "@/components/ProjectTable";
 import ProjectMatrix from "@/components/ProjectMatrix";
+import ProjectChart from "@/components/ProjectChart";
 import { projects } from "@/data/projects";
 
 export default function Home() {
@@ -23,7 +23,6 @@ export default function Home() {
     return acc;
   }, {} as Record<string, number>);
 
-  
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,6 +64,8 @@ export default function Home() {
     return matchesStatus && matchesSearch;
   });
 
+  const padding = 80;
+
   // Auto-centering effect when filters change
   useEffect(() => {
     if (filteredProjects.length === 0 || dimensions.width === 0) {
@@ -76,7 +77,6 @@ export default function Home() {
     }
 
     // Calculate bounds in percent space
-    // Using same logic as the render mapping to find exact center
     const bounds = filteredProjects.reduce((acc, p, index) => {
       const rawLeft = (p.monto / maxMonto) * 100;
       const rawBottom = ((p.avance - minAvance) / (maxAvance - minAvance)) * 100;
@@ -106,13 +106,12 @@ export default function Home() {
     const centerY = dimensions.height / 2;
 
     // Zoom calculation to fit bounds comfortably
-    const rangeX = Math.max(bounds.maxX - bounds.minX, 15); // Min range to avoid infinite zoom
+    const rangeX = Math.max(bounds.maxX - bounds.minX, 15);
     const rangeY = Math.max(bounds.maxY - bounds.minY, 15);
     
-    const zoomX = (100 * 0.5) / rangeX; // Occupy 50% of viewport
+    const zoomX = (100 * 0.5) / rangeX;
     const zoomY = (100 * 0.5) / rangeY;
     
-    // Cap zoom for auto-centering
     const nextZoom = Math.min(Math.max(Math.min(zoomX, zoomY), 0.8), 3);
     
     setZoom(nextZoom);
@@ -130,9 +129,8 @@ export default function Home() {
     );
   };
 
-
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return; // Only left click
+    if (e.button !== 0) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
   };
@@ -162,42 +160,8 @@ export default function Home() {
     };
   }, []);
 
-  const padding = 80; // Correspondiente a p-20 (20 * 4px)
-
-  // Helper to map screen position to data value
-  const getDataValue = (screenPos: number, isX: boolean) => {
-    const size = isX ? dimensions.width : dimensions.height;
-    const offsetVal = isX ? offset.x : offset.y;
-    const center = size / 2;
-    
-    // Reverse the transform: s = (p - center) * zoom + center + offset
-    const p = (screenPos - offsetVal - center) / zoom + center;
-    
-    const dataAreaSize = size - 2 * padding;
-    
-    if (isX) {
-      const normalizedX = (p - padding) / dataAreaSize;
-      return normalizedX * maxMonto;
-    } else {
-      // Y-axis is from bottom: p is dist from top
-      const distFromBottom = dimensions.height - p;
-      const normalizedY = (distFromBottom - padding) / dataAreaSize;
-      return minAvance + normalizedY * (maxAvance - minAvance);
-    }
-  };
-
-  const getYValue = (percent: number) => {
-    // percent is distance from top of the main container (0 to 1)
-    return getDataValue(percent * dimensions.height, false);
-  };
-
-  const getXValue = (percent: number) => {
-    // percent is distance from left of the main container (0 to 1)
-    return getDataValue(percent * dimensions.width, true);
-  };
-
   return (
-    <div className="min-h-screen p-8 bg-background select-none">
+    <div className="min-h-screen p-8 bg-background select-none" ref={containerRef}>
       <header className="mb-12 space-y-8">
         {/* Row 1: Logo & View Controls */}
         <div className="flex justify-between items-end">
@@ -257,7 +221,6 @@ export default function Home() {
                 { id: 'Amarillo', label: 'Riesgo', color: 'bg-amber-400' },
                 { id: 'Rojo', label: 'Crítico', color: 'bg-rose-500' },
                 { id: 'Gris', label: 'Hold', color: 'bg-slate-400' },
-                // { id: 'Azul', label: 'Soporte', color: 'bg-blue-500' },
               ].map((status) => (
                 <button
                   key={status.id}
@@ -357,122 +320,17 @@ export default function Home() {
 
       <main className="max-w-8xl mx-auto mb-20">
         {viewMode === 'chart' ? (
-          <div 
-            ref={containerRef}
+          <ProjectChart 
+            filteredProjects={filteredProjects}
+            zoom={zoom}
+            offset={offset}
+            activeCardId={activeCardId}
+            setActiveCardId={setActiveCardId}
+            isDragging={isDragging}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            className={`relative w-full h-[800px] border-l-2 border-b-2 border-brand-primary/10 bg-zinc-50/50 backdrop-blur-sm rounded-tr-3xl shadow-sm overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-          >
-        {/* Overflow hidden is key here to keep zoomed content inside the box */}
-        
-        {/* Content wrapper that responds to zoom and offset */}
-          {/* Container for everything that scales and pans */}
-          <div 
-            className="absolute inset-0 transition-transform ease-out"
-            style={{
-              transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
-              transformOrigin: '50% 50%',
-              transitionDuration: isDragging ? '50ms' : '700ms'
-            }}
-          >
-            {/* Dynamic Hierarchical Grid - Expanded to prevent cut-off during pan */}
-            <div 
-              className="absolute pointer-events-none"
-              style={{
-                top: '-1000%',
-                left: '-1000%',
-                width: '3000%',
-                height: '3000%',
-                backgroundImage: `
-                  linear-gradient(to right, rgba(15, 23, 42, ${zoom > 6 ? 0.03 : 0}) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(15, 23, 42, ${zoom > 6 ? 0.03 : 0}) 1px, transparent 1px),
-                  linear-gradient(to right, rgba(15, 23, 42, ${zoom > 3 ? 0.05 : 0}) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(15, 23, 42, ${zoom > 3 ? 0.05 : 0}) 1px, transparent 1px),
-                  linear-gradient(to right, rgba(15, 23, 42, ${zoom > 1.5 ? 0.05 : 0}) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(15, 23, 42, ${zoom > 1.5 ? 0.05 : 0}) 1px, transparent 1px),
-                  linear-gradient(to right, rgba(15, 23, 42, 0.1) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(15, 23, 42, 0.1) 1px, transparent 1px)
-                `,
-                backgroundSize: `
-                  ${(dimensions.width - 160) / 32}px ${(dimensions.height - 160) / 32}px,
-                  ${(dimensions.width - 160) / 32}px ${(dimensions.height - 160) / 32}px,
-                  ${(dimensions.width - 160) / 16}px ${(dimensions.height - 160) / 16}px,
-                  ${(dimensions.width - 160) / 16}px ${(dimensions.height - 160) / 16}px,
-                  ${(dimensions.width - 160) / 8}px ${(dimensions.height - 160) / 8}px,
-                  ${(dimensions.width - 160) / 8}px ${(dimensions.height - 160) / 8}px,
-                  ${(dimensions.width - 160) / 4}px ${(dimensions.height - 160) / 4}px,
-                  ${(dimensions.width - 160) / 4}px ${(dimensions.height - 160) / 4}px
-                `,
-                backgroundPosition: 'calc(1000% + 80px) calc(1000% + 80px)',
-                transition: 'opacity 0.3s ease-out'
-              }}
-            ></div>
-  
-            {/* Chart Content Area (where projects live) */}
-            <div className="absolute inset-x-20 inset-y-20">
-              {filteredProjects.map((project, index) => {
-
-              const rawLeft = (project.monto / maxMonto) * 100;
-              const rawBottom = ((project.avance - minAvance) / (maxAvance - minAvance)) * 100;
-
-              // Stable Jitter
-              const jitterX = ((index % 5) - 2) * 1.5;
-              const jitterY = (((index * 7) % 5) - 2) * 1.5;
-
-              const left = Math.min(Math.max(rawLeft + jitterX, 0), 100);
-              const bottom = Math.min(Math.max(rawBottom + jitterY, 0), 100);
-
-              return (
-                <div
-                  key={project.id}
-                  className={`absolute transition-all duration-1000 ease-out ${activeCardId === project.id ? 'z-[100]' : 'hover:z-50'}`}
-                  style={{
-                    left: `${left}%`,
-                    bottom: `${bottom}%`,
-                    // Aggressive inverse scale: cards shrink more at high zoom to create space
-                    transform: `translate(-50%, 50%) scale(${Math.max(0.2, 1 / zoom)})`,
-                  }}
-                >
-                  <FlipCard 
-                    project={project} 
-                    zoom={zoom} 
-                    isFlipped={activeCardId === project.id}
-                    onToggle={() => setActiveCardId(activeCardId === project.id ? null : project.id)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* AXES (Outside wrapper so they stay fixed) */}
-        {/* Y-Axis Label */}
-        <div className="absolute left-4 top-1/2 -rotate-90 origin-center text-xs font-black tracking-widest text-brand-primary opacity-40 uppercase whitespace-nowrap pointer-events-none z-10">
-          Impacto Alcanzado (%)
-        </div>
-
-        {/* X-Axis Label */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-black tracking-widest text-brand-primary/30 uppercase pointer-events-none z-10">
-          Monto de Inversión ($)
-        </div>
-
-        {/* Axis Markers - Aligned with the data container (inset-20) */}
-        <div className="absolute left-[70px] top-20 bottom-20 flex flex-col justify-between text-[8px] font-bold text-brand-primary/40 py-1 pointer-events-none z-10 items-end">
-          <span>{Math.round(getYValue(padding / dimensions.height))}%</span>
-          <span>{Math.round(getYValue((padding + (dimensions.height - 2 * padding) * 0.25) / dimensions.height))}%</span>
-          <span>{Math.round(getYValue(0.5))}%</span>
-          <span>{Math.round(getYValue((padding + (dimensions.height - 2 * padding) * 0.75) / dimensions.height))}%</span>
-          <span>{Math.round(getYValue((dimensions.height - padding) / dimensions.height))}%</span>
-        </div>
-        <div className="absolute bottom-[70px] left-20 right-20 flex justify-between text-[8px] font-bold text-brand-primary/40 px-1 pointer-events-none z-10">
-          <span>${Math.round(getXValue(padding / dimensions.width)).toLocaleString()}</span>
-          <span>${Math.round(getXValue((padding + (dimensions.width - 2 * padding) * 0.25) / dimensions.width)).toLocaleString()}</span>
-          <span>${Math.round(getXValue(0.5)).toLocaleString()}</span>
-          <span>${Math.round(getXValue((padding + (dimensions.width - 2 * padding) * 0.75) / dimensions.width)).toLocaleString()}</span>
-          <span>${Math.round(getXValue((dimensions.width - padding) / dimensions.width)).toLocaleString()}</span>
-        </div>
-          </div>
+          />
         ) : viewMode === 'table' ? (
           <ProjectTable projects={filteredProjects} />
         ) : (

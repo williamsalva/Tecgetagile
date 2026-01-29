@@ -23,7 +23,6 @@ export default function FlipCard({ project, zoom, isFlipped, onToggle }: FlipCar
   const typeIcon = project.tipo === "Producto" ? "Π" : "ϰ";
   const config = statusConfig[project.estatus] || statusConfig.Gris;
   const statusColor = config.color;
-  const statusBorderColor = config.border;
 
   // Calculate hover scale to keep final screen size roughly constant (around 240px)
   // zoom * cardBaseScale (Math.max(0.2, 1/zoom)) * hoverMultiplier = 5 (target scale)
@@ -50,8 +49,8 @@ export default function FlipCard({ project, zoom, isFlipped, onToggle }: FlipCar
         }`}
       >
         {/* Front Side */}
-        <div className={`absolute inset-0 flex flex-col items-center justify-center rounded-md bg-white border border-zinc-100 border-b ${statusBorderColor} [backface-visibility:hidden] p-1 shadow-sm group-hover:shadow-2xl transition-shadow`}>
-          <div className={`absolute top-1 right-1 w-1 h-1 rounded-full ${statusColor}`} />
+        <div className={`absolute inset-0 flex flex-col items-center justify-center rounded-md bg-white border border-zinc-100 [backface-visibility:hidden] p-1 shadow-sm group-hover:shadow-2xl transition-shadow overflow-hidden`}>
+          <div className={`absolute bottom-0 left-0 right-0 h-1 ${statusColor}`} />
           <span className="text-sm font-black text-brand-primary tracking-tighter">
             {project.simbolo}
           </span>
