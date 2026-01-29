@@ -59,7 +59,7 @@ export default function FlipCard({ project }: FlipCardProps) {
         <div className="absolute inset-0 flex h-full w-full flex-col rounded-xl bg-brand-primary text-white [backface-visibility:hidden] [transform:rotateY(180deg)] p-4 shadow-inner">
           <div className="mb-2 border-b border-white/20 pb-1">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-brand-accent">
-              DETALLES
+              {project.id}
             </h3>
             <p className="text-xs font-bold truncate">{project.nombreCorto}</p>
           </div>
