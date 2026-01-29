@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import FlipCard from "@/components/FlipCard";
+import ProjectTable from "@/components/ProjectTable";
 import { projects } from "@/data/projects";
 
 export default function Home() {
@@ -12,6 +13,8 @@ export default function Home() {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['Verde', 'Amarillo', 'Rojo', 'Gris', 'Azul']);
+  const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Calculate project counts per status
   const statusCounts = projects.reduce((acc, project) => {
@@ -49,7 +52,17 @@ export default function Home() {
   const minAvance = Math.floor(realMinAvance / 10) * 10 - 10;
   const maxAvance = Math.ceil(realMaxAvance / 10) * 10 + 10;
 
-  const filteredProjects = projects.filter(p => selectedStatuses.includes(p.estatus));
+  const filteredProjects = projects.filter(p => {
+    const matchesStatus = selectedStatuses.includes(p.estatus);
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = 
+      p.id.toLowerCase().includes(query) || 
+      p.nombre.toLowerCase().includes(query) || 
+      p.nombreCorto.toLowerCase().includes(query) || 
+      p.po.toLowerCase().includes(query);
+    
+    return matchesStatus && matchesSearch;
+  });
 
   // Auto-centering effect when filters change
   useEffect(() => {
@@ -184,45 +197,50 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8 bg-background select-none">
-      <header className="mb-12 flex justify-between items-end">
-        <div>
-          <h1 className="text-5xl font-black text-brand-primary tracking-tighter">
-            Getagile
-          </h1>
-          <p className="text-brand-secondary mt-1 uppercase tracking-[0.3em] text-[10px] font-bold">
-            Ecosistema de Innovación & Impacto
-          </p>
-        </div>
-        
-        <div className="flex gap-8 items-center">
-          {/* Zoom Controls */}
-          <div className="flex items-center gap-2 bg-white p-1 rounded-xl shadow-sm border border-zinc-100">
-            <button 
-              onClick={() => setZoom(prev => Math.max(0.5, prev - 0.2))}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 font-bold transition-colors"
-            >
-              −
-            </button>
-            <span className="text-[10px] font-black w-12 text-center text-brand-primary">
-              {Math.round(zoom * 100)}%
-            </span>
-            <button 
-              onClick={() => setZoom(prev => Math.min(10, prev + 0.2))}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 font-bold transition-colors"
-            >
-              +
-            </button>
-            <button 
-              onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }}
-              className="px-3 py-1 text-[8px] font-black uppercase tracking-widest hover:bg-zinc-100 rounded-lg transition-colors border-l border-zinc-100 ml-1"
-            >
-              Reset
-            </button>
+      <header className="mb-12 space-y-8">
+        {/* Row 1: Logo & View Controls */}
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-5xl font-black text-brand-primary tracking-tighter">
+              Getagile
+            </h1>
+            <p className="text-brand-secondary mt-1 uppercase tracking-[0.3em] text-[10px] font-bold">
+              Ecosistema de Innovación & Impacto
+            </p>
           </div>
+          
+          <div className="flex gap-4 items-center">
+            {/* View Toggle */}
+            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-zinc-100 gap-1">
+              <button 
+                onClick={() => setViewMode('chart')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                  viewMode === 'chart' 
+                    ? 'bg-zinc-50 text-brand-primary' 
+                    : 'opacity-40 hover:opacity-100 text-brand-secondary'
+                }`}
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest">Gráfica</span>
+              </button>
+              <button 
+                onClick={() => setViewMode('table')}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                  viewMode === 'table' 
+                    ? 'bg-zinc-50 text-brand-primary' 
+                    : 'opacity-40 hover:opacity-100 text-brand-secondary'
+                }`}
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest">Tabla</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
+        {/* Row 2: Filters & Search */}
+        <div className="flex justify-between items-center bg-white/50 backdrop-blur-md p-2 rounded-2xl border border-zinc-100/50 shadow-sm">
           <div className="flex gap-4 items-center">
             {/* Legend / Status Filter */}
-            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-zinc-100 gap-1">
+            <div className="flex bg-white/50 p-1 rounded-xl gap-1">
               {[
                 { id: 'Verde', label: 'Saludable', color: 'bg-emerald-500' },
                 { id: 'Amarillo', label: 'Riesgo', color: 'bg-amber-400' },
@@ -235,7 +253,7 @@ export default function Home() {
                   onClick={() => toggleStatus(status.id)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 ${
                     selectedStatuses.includes(status.id)
-                      ? 'bg-zinc-50 opacity-100'
+                      ? 'bg-white shadow-sm opacity-100'
                       : 'opacity-30 grayscale'
                   }`}
                 >
@@ -250,35 +268,91 @@ export default function Home() {
                   </div>
                 </button>
               ))}
-              <div className="w-[1px] bg-zinc-100 mx-1"></div>
+              <div className="w-[1px] bg-zinc-200/50 mx-1"></div>
               <button
                 onClick={() => {
                   if (selectedStatuses.length === 5) setSelectedStatuses([]);
                   else setSelectedStatuses(['Verde', 'Amarillo', 'Rojo', 'Gris', 'Azul']);
                 }}
-                className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest hover:bg-zinc-50 rounded-lg transition-colors text-brand-secondary"
+                className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest hover:bg-white rounded-lg transition-colors text-brand-secondary"
               >
                 {selectedStatuses.length === 5 ? 'Ninguno' : 'Todos'}
               </button>
             </div>
+
+            {/* Zoom Controls (Only show in chart mode) */}
+            {viewMode === 'chart' && (
+              <div className=" ml-4 flex items-center gap-2 bg-white p-1 rounded-xl shadow-sm border border-zinc-100 h-[38px]">
+                <button 
+                  onClick={() => setZoom(prev => Math.max(0.5, prev - 0.2))}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 font-bold transition-colors"
+                >
+                  −
+                </button>
+                <span className="text-[10px] font-black w-12 text-center text-brand-primary">
+                  {Math.round(zoom * 100)}%
+                </span>
+                <button 
+                  onClick={() => setZoom(prev => Math.min(10, prev + 0.2))}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 font-bold transition-colors"
+                >
+                  +
+                </button>
+                <button 
+                  onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }}
+                  className="px-3 py-1 text-[8px] font-black uppercase tracking-widest hover:bg-zinc-100 rounded-lg transition-colors border-l border-zinc-100 ml-1"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
           </div>
 
+          {/* Search Bar */}
+          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-zinc-100 min-w-[340px] group transition-all duration-300 focus-within:ring-4 focus-within:ring-brand-primary/5 focus-within:border-brand-primary/20">
+            <svg 
+              className="w-4 h-4 text-brand-secondary/40 group-focus-within:text-brand-primary transition-colors" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input 
+              type="text"
+              placeholder="Buscar por ID, Proyecto o PO..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none outline-none text-xs font-bold text-brand-primary placeholder:text-brand-secondary/30 w-full"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-zinc-100 text-brand-secondary/40 hover:text-brand-primary transition-all"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="flex justify-center mb-10">
         <p className="text-[10px] font-bold text-brand-primary/40 uppercase tracking-[0.2em] bg-white/50 backdrop-blur-md px-4 py-2 rounded-full border border-brand-primary/5">
-          {filteredProjects.length} {filteredProjects.length === 1 ? 'Proyecto visualizado' : 'Proyectos visualizados'} • Arrastra para navegar • Usa zoom para separar
+          {filteredProjects.length} {filteredProjects.length === 1 ? 'Proyecto visualizado' : 'Proyectos visualizados'} 
+          {viewMode === 'chart' && ' • Arrastra para navegar • Usa zoom para separar'}
         </p>
       </div>
 
-      <main 
-        ref={containerRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        className={`relative max-w-8xl mx-auto h-[800px] border-l-2 border-b-2 border-brand-primary/10 mt-0 mb-20 bg-zinc-50/50 backdrop-blur-sm rounded-tr-3xl shadow-sm overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-      >
+      <main className="max-w-8xl mx-auto mb-20">
+        {viewMode === 'chart' ? (
+          <div 
+            ref={containerRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            className={`relative w-full h-[800px] border-l-2 border-b-2 border-brand-primary/10 bg-zinc-50/50 backdrop-blur-sm rounded-tr-3xl shadow-sm overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          >
         {/* Overflow hidden is key here to keep zoomed content inside the box */}
         
         {/* Content wrapper that responds to zoom and offset */}
@@ -387,6 +461,10 @@ export default function Home() {
           <span>${Math.round(getXValue((padding + (dimensions.width - 2 * padding) * 0.75) / dimensions.width)).toLocaleString()}</span>
           <span>${Math.round(getXValue((dimensions.width - padding) / dimensions.width)).toLocaleString()}</span>
         </div>
+          </div>
+        ) : (
+          <ProjectTable projects={filteredProjects} />
+        )}
       </main>
       
     </div>
