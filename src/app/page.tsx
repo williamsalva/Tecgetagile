@@ -1,65 +1,95 @@
-import Image from "next/image";
+import FlipCard from "@/components/FlipCard";
+import { projects } from "@/data/projects";
 
 export default function Home() {
+  // Find max values for normalization
+  const maxMonto = Math.max(...projects.map(p => p.monto), 100000);
+  const maxAvance = 100; // Always 100%
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen p-8 bg-background">
+      <header className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="text-5xl font-black text-brand-primary tracking-tighter">
+            Tecgetagile
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-brand-secondary mt-1 uppercase tracking-[0.3em] text-[10px] font-bold">
+            Ecosistema de Innovación & Impacto
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest text-brand-secondary/60">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Saludable
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400"></span> Riesgo
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500"></span> Crítico
+          </div>
+        </div>
+      </header>
+
+      <main className="relative max-w-7xl mx-auto h-[700px] border-l-2 border-b-2 border-brand-primary/20 mt-12 mb-20 bg-white/30 backdrop-blur-sm rounded-tr-3xl">
+        {/* Y-Axis Label */}
+        <div className="absolute -left-16 top-1/2 -rotate-90 origin-center text-xs font-black tracking-widest text-brand-primary opacity-40 uppercase whitespace-nowrap">
+          Impacto Alcanzado (%)
+        </div>
+
+        {/* X-Axis Label */}
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-xs font-black tracking-widest text-brand-primary opacity-40 uppercase">
+          Monto de Inversión ($)
+        </div>
+
+        {/* Grid Lines */}
+        <div className="absolute inset-0 grid grid-cols-4 grid-rows-4 pointer-events-none">
+          {[...Array(16)].map((_, i) => (
+            <div key={i} className="border-t border-r border-brand-primary/5"></div>
+          ))}
+        </div>
+
+        {/* Coordinate Points (FlipCards) */}
+        <div className="absolute inset-0 p-12">
+          {projects.map((project) => {
+            // Calculate relative positions
+            // X: Monto (Left to Right)
+            // Y: Avance (Bottom to Top)
+            const left = (project.monto / maxMonto) * 100;
+            const bottom = (project.avance / maxAvance) * 100;
+
+            return (
+              <div
+                key={project.id}
+                className="absolute transition-all duration-1000 ease-out hover:z-50"
+                style={{
+                  left: `${left}%`,
+                  bottom: `${bottom}%`,
+                  transform: "translate(-50%, 50%)", // Center the card on the point
+                }}
+              >
+                <FlipCard project={project} />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Axis Markers */}
+        <div className="absolute -left-2 top-0 h-full flex flex-col justify-between text-[8px] font-bold text-brand-primary/40 py-1 ">
+          <span>100%</span>
+          <span>75%</span>
+          <span>50%</span>
+          <span>25%</span>
+          <span>0%</span>
+        </div>
+        <div className="absolute -bottom-6 left-0 w-full flex justify-between text-[8px] font-bold text-brand-primary/40 px-1">
+          <span>$0</span>
+          <span>${(maxMonto * 0.25).toLocaleString()}</span>
+          <span>${(maxMonto * 0.5).toLocaleString()}</span>
+          <span>${(maxMonto * 0.75).toLocaleString()}</span>
+          <span>${maxMonto.toLocaleString()}</span>
         </div>
       </main>
     </div>
   );
 }
+
