@@ -2,11 +2,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: radial-gradient(circle at center, #ffffff 0%, #f0f7ff 100%);
-  --foreground: #1a1a1a;
-  --brand-primary: #003399;
-  --brand-secondary: #0076ce;
-  --brand-accent: #00b5e2;
+  --background: #ffffff;
+  --foreground: #000000;
+  --brand-primary: #000000; /* Pure Black */
+  --brand-secondary: #71717a; /* Muted zinc */
+  --brand-accent: #e4e4e7; /* Light zinc */
   --font-raleway: "Raleway", sans-serif;
 }
 
@@ -37,8 +37,8 @@ body::before {
   width: 100%;
   height: 100%;
   z-index: -1;
-  opacity: 0.4;
-  background-image: url("data:image/svg+xml,%3Csvg width='100%' height='100%' viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,500 C200,400 300,600 500,500 C700,400 800,600 1000,500' stroke='%2300b5e2' stroke-width='0.5' fill='none' opacity='0.2'/%3E%3Cpath d='M0,600 C200,500 300,700 500,600 C700,500 800,700 1000,600' stroke='%2300b5e2' stroke-width='0.5' fill='none' opacity='0.15'/%3E%3Cpath d='M0,400 C200,300 300,500 500,400 C700,300 800,500 1000,400' stroke='%2300b5e2' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,500 C200,400 300,600 500,500 C700,400 800,600 1000,500' stroke='%23000000' stroke-width='0.5' fill='none' /%3E%3Cpath d='M0,600 C200,500 300,700 500,600 C700,500 800,700 1000,600' stroke='%23000000' stroke-width='0.5' fill='none' /%3E%3Cpath d='M0,400 C200,300 300,500 500,400 C700,300 800,500 1000,400' stroke='%23000000' stroke-width='0.5' fill='none' /%3E%3C/svg%3E");
   background-size: cover;
   pointer-events: none;
 }
